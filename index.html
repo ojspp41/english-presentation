@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Business English Presentation</title>
+    <style>
+        /* ===== CSS 코드 시작 (디자인 및 애니메이션 강화) ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Roboto:wght@400;500;700&display=swap');
+
+        :root {
+            --primary-bg: #eef2f7;
+            --slide-bg: #ffffff;
+            --text-color: #333d4b;
+            --header-color: #1e2a3b;
+            --accent-color: #007aff;
+            --accent-light: #e6f2ff;
+            --footer-color: #adb5bd;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Roboto', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #progressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease-out;
+            z-index: 200;
+        }
+
+        #presentation {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, visibility 0.4s;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1000px;
+            height: 90%;
+            max-height: 600px;
+            padding: 40px 50px;
+            background-color: var(--slide-bg);
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide-content.left-align {
+            text-align: left;
+            justify-content: flex-start;
+        }
+        
+        .slide-content footer {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            font-size: 0.9em;
+            color: var(--footer-color);
+        }
+
+        .section-title .slide-content {
+            background: linear-gradient(135deg, var(--accent-color), #0056b3);
+            color: white;
+        }
+        .section-title h1, .section-title h2 {
+            color: white;
+        }
+
+        h1 { font-size: 3em; color: var(--header-color); margin-bottom: 0.2em; }
+        h2 { font-size: 2.2em; color: var(--header-color); margin-top: 0; margin-bottom: 0.8em; border-bottom: 3px solid var(--accent-color); padding-bottom: 10px;}
+        p, li { font-size: 1.3em; line-height: 1.7; }
+
+        ul { list-style-type: none; padding: 0; margin-top: 20px; }
+        li { margin-bottom: 1.2em; }
+
+        code {
+            font-size: 1.1em;
+            background-color: var(--accent-light);
+            color: var(--accent-color);
+            padding: 0.3em 0.5em;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .function {
+            font-size: 1.2em;
+            color: #555;
+            padding-left: 15px;
+            margin: 20px 0;
+        }
+
+        .clickable {
+            background-color: transparent;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .clickable:hover {
+            border-color: var(--accent-color);
+            background-color: var(--accent-light);
+        }
+        .korean {
+            font-weight: 500;
+        }
+        .english.translation {
+            display: none;
+            margin-top: 10px;
+            color: var(--accent-color);
+            font-style: italic;
+            font-size: 1.1em;
+        }
+        .clickable.revealed {
+             border-color: var(--accent-color);
+        }
+        .clickable.revealed .english.translation {
+            display: block;
+        }
+        
+        /* Sequential Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+        .navigation button {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.8em;
+            cursor: pointer;
+            margin-left: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .navigation button:hover {
+            transform: scale(1.1);
+            background-color: #0056b3;
+        }
+        .navigation button:disabled {
+            background-color: #ced4da;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <div id="progressBar"></div>
+    <main id="presentation">
+        <section class="slide active">
+            <div class="slide-content">
+                <h1>Dynamic Business English</h1>
+                <p style="font-size: 1.5em;">핵심 표현으로 배우는 비즈니스 영어</p>
+                <footer>Interactive Presentation by Gemini</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Agenda: 오늘 배울 내용</h2>
+                <ul class="reveal">
+                    <li class="reveal">회의와 프레젠테이션의 흐름을 만드는 13가지 핵심 표현</li>
+                    <li class="reveal">각 표현의 정확한 뉘앙스와 사용법</li>
+                    <li class="reveal">실제 비즈니스 상황에 맞는 예문 연습</li>
+                </ul>
+                <footer>Interactive Presentation by Gemini</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 1: <code>I'd like to start with...</code></h2>
+                <p class="function reveal">발표나 회의의 서두를 열 때 가장 보편적으로 사용하는 정중한 표현입니다. 듣는 이의 주의를 환기시키고 발표의 첫 단계를 명확히 알리는 역할을 합니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">짧은 동영상으로 시작하고 싶습니다.</span>
+                        <span class="english translation">I'd like to start with a short video.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">질문으로 시작하겠습니다.</span>
+                        <span class="english translation">I'd like to start with a question.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 1 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 2: <code>What if...?</code></h2>
+                <p class="function reveal">새로운 아이디어를 제안하거나, 특정 상황을 가정하여 질문할 때 쓰는 강력한 표현입니다. 브레인스토밍이나 창의적인 해결책을 모색할 때 매우 유용합니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">수익을 두 배로 올릴 수 있다면 어떻게 될까요?</span>
+                        <span class="english translation">What if you can double your profits?</span>
+                    </li>
+                     <li class="clickable">
+                        <span class="korean">우리가 더 오래 살 수 있다면 어떻게 될까요?</span>
+                        <span class="english translation">What if we could live longer?</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 2 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 3: <code>Let's turn to...</code></h2>
+                <p class="function reveal">한 주제에 대한 논의를 마치고, 다음 주제로 자연스럽게 전환하고자 할 때 사용하는 표현입니다. 회의의 흐름을 체계적으로 이끌어 나갈 수 있습니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">이제, 좋은 소식으로 넘어가겠습니다.</span>
+                        <span class="english translation">Now, let's turn to some good news.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">다음으로, 2분기 실적을 살펴보겠습니다.</span>
+                        <span class="english translation">Next, let's turn to our second-quarter earnings.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 3 / 13</footer>
+            </div>
+        </section>
+        
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 4: <code>I'd like to add that...</code></h2>
+                <p class="function reveal">자신의 주장에 중요한 정보를 덧붙여 설득력을 높이고 싶을 때 사용합니다. '게다가', '덧붙여 말하자면' 정도의 뉘앙스를 가집니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">게다가 우리에겐 두 개의 선택지가 있습니다.</span>
+                        <span class="english translation">I'd like to add that we have two options.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">매출이 감소했다는 점을 덧붙이고 싶습니다.</span>
+                        <span class="english translation">I'd like to add that sales have fallen.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 4 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 5: <code>On a side note,...</code></h2>
+                <p class="function reveal">대화의 주요 흐름과는 약간 다른, 부가적인 정보를 언급할 때 사용합니다. '주제를 벗어난 얘기지만', '참고로 말씀드리 면' 과 같은 의미로 쓰입니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">주제를 벗어나자면, 우리 경쟁업체들마저 시장 점유율을 잃고 있었습니다.</span>
+                        <span class="english translation">On a side note, even our competitors were losing market share.</span>
+                    </li>
+                     <li class="clickable">
+                        <span class="korean">참고로, 결과는 놀라웠습니다.</span>
+                        <span class="english translation">On a side note, the results were amazing.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 5 / 13</footer>
+            </div>
+        </section>
+        
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 6: <code>Let's come back to...</code></h2>
+                <p class="function reveal">논의가 잠시 다른 길로 샜거나, 이전에 다뤘던 주제로 다시 돌아가고 싶을 때 사용합니다. 대화의 초점을 다시 맞추는 역할을 합니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">정부 정책에 대한 쟁점으로 다시 돌아오겠습니다.</span>
+                        <span class="english translation">Let's come back to the issue of government policy.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">본론으로 돌아와서, 슬라이드를 다시 보겠습니다.</span>
+                        <span class="english translation">Let's come back to the slide.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 6 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 7: <code>As I said earlier,...</code></h2>
+                <p class="function reveal">앞서 언급했던 내용을 다시 한번 강조하거나 상기시킬 때 사용하는 표현입니다. 정보의 중요성을 부각시키거나, 듣는 이의 이해를 돕습니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">아까 말씀드린 것처럼, 파업은 뜻밖이었습니다.</span>
+                        <span class="english translation">As I said earlier, the strike was unexpected.</span>
+                    </li>
+                     <li class="clickable">
+                        <span class="korean">앞서 말씀드렸듯이, 우리는 신속하게 행동해야 합니다.</span>
+                        <span class="english translation">As I said earlier, we need to act quickly.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 7 / 13</footer>
+            </div>
+        </section>
+        
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 8: <code>I want to stress that...</code></h2>
+                <p class="function reveal">자신의 의견 중 특정 부분을 매우 강력하게 강조하고 싶을 때 사용합니다. 듣는 사람이 반드시 기억하기를 바라는 핵심 사항을 전달합니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">고객의 요구사항을 충족시키는 것의 중요성을 강조하고 싶습니다.</span>
+                        <span class="english translation">I want to stress the importance of meeting customer requirements.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">이 요점을 강조하고 싶습니다.</span>
+                        <span class="english translation">I want to stress this point.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 8 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 9: <code>For instance,...</code></h2>
+                <p class="function reveal">'For example'과 유사하게, 구체적인 예를 들어 자신의 주장을 뒷받침하고 싶을 때 사용합니다. 주장을 더 명확하고 이해하기 쉽게 만듭니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">예를 들어, 고객이 우리 제품에 불만족스러워할 수 있습니다.</span>
+                        <span class="english translation">For instance, customers might be unhappy with our product.</span>
+                    </li>
+                     <li class="clickable">
+                        <span class="korean">예를 들어, 우리는 회의를 요청할 수 있습니다.</span>
+                        <span class="english translation">For instance, we can ask for a meeting.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 9 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 10: <code>That is why...</code></h2>
+                <p class="function reveal">앞서 말한 내용이 원인이 되어, 현재의 결과가 나타났음을 설명하는 인과관계 표현입니다. 논리적인 흐름을 만드는데 효과적입니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">그런 이유로 주식 시장이 붕괴된 겁니다.</span>
+                        <span class="english translation">That is why the stock market crashed.</span>
+                    </li>
+                     <li class="clickable">
+                        <span class="korean">그런 이유로 그 고객이 망설인 겁니다.</span>
+                        <span class="english translation">That is why the client balked.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 10 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 11: <code>In the same way,...</code></h2>
+                <p class="function reveal">앞선 내용과 비슷한 방식으로 다른 상황을 설명하거나, 유추/비교를 통해 이해를 돕고자 할 때 사용합니다. '마찬가지로' 라는 의미를 가집니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">마찬가지로, 우리도 그들의 관심을 끌어야 합니다.</span>
+                        <span class="english translation">In the same way, we also need to grab their attention.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">마찬가지로, 우리도 베타테스트를 할 수 있습니다.</span>
+                        <span class="english translation">In the same way, we can do a beta test.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 11 / 13</footer>
+            </div>
+        </section>
+        
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 12: <code>On the other hand,...</code></h2>
+                <p class="function reveal">앞서 제시한 내용과 대조되는 측면이나 반대 의견을 제시할 때 사용합니다. 논의의 균형을 맞추고, 다각적인 시각을 보여줄 수 있습니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">반면에, 다 나쁜 것만은 아닐 수도 있습니다.</span>
+                        <span class="english translation">On the other hand, it might not be all bad.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">반면에, 사기는 높습니다.</span>
+                        <span class="english translation">On the other hand, the morale is high.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 12 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="slide-content left-align">
+                <h2>Key Phrase 13: <code>There are...</code></h2>
+                <p class="function reveal">여러 가지 방법, 이유, 아이디어 등을 열거하며 설명을 시작할 때 사용하는 기초적이면서도 중요한 표현입니다. 내용을 구조화하여 전달하는 데 도움이 됩니다.</p>
+                <ul class="reveal">
+                    <li class="clickable">
+                        <span class="korean">적어도 세 가지 아이디어들이 있습니다.</span>
+                        <span class="english translation">There are at least three ideas.</span>
+                    </li>
+                    <li class="clickable">
+                        <span class="korean">그것을 하는 데는 두 가지 방법이 있습니다.</span>
+                        <span class="english translation">There are two ways to do that.</span>
+                    </li>
+                </ul>
+                <footer>Key Phrase 13 / 13</footer>
+            </div>
+        </section>
+
+        <section class="slide section-title">
+            <div class="slide-content">
+                <h1>Thank You</h1>
+                <h2>Q & A</h2>
+                <footer>Interactive Presentation by Gemini</footer>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="navigation">
+        <button id="prevBtn" title="Previous Slide (←)">&larr;</button>
+        <button id="nextBtn" title="Next Slide / Reveal (→)">&rarr;</button>
+    </div>
+
+    <script>
+        // ===== JavaScript 코드 시작 (애니메이션 기능 추가) =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const progressBar = document.getElementById('progressBar');
+            const clickableItems = document.querySelectorAll('.clickable');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                // Reset reveals on previous slide before switching
+                const oldSlide = slides[currentSlide];
+                oldSlide.querySelectorAll('.reveal').forEach(el => el.classList.remove('visible'));
+
+                // Switch to new slide
+                slides.forEach(slide => slide.classList.remove('active'));
+                slides[index].classList.add('active');
+                currentSlide = index;
+
+                updateProgressBar();
+                updateNavButtons();
+            }
+            
+            function updateProgressBar() {
+                const percentage = ((currentSlide + 1) / slides.length) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+
+            function updateNavButtons() {
+                prevBtn.disabled = (currentSlide === 0);
+                nextBtn.disabled = (currentSlide === slides.length - 1 && !getHiddenReveals().length);
+            }
+
+            function getHiddenReveals() {
+                 return slides[currentSlide].querySelectorAll('.reveal:not(.visible)');
+            }
+
+            function nextStep() {
+                const hiddenReveals = getHiddenReveals();
+                if (hiddenReveals.length > 0) {
+                    // Reveal next element on the same slide
+                    hiddenReveals[0].classList.add('visible');
+                } else if (currentSlide < slides.length - 1) {
+                    // Go to next slide
+                    showSlide(currentSlide + 1);
+                }
+                updateNavButtons();
+            }
+
+            function prevStep() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            }
+
+            // Click to reveal translation
+            clickableItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Stop event from bubbling up to slide/document
+                    item.classList.toggle('revealed');
+                });
+            });
+
+            // Event Listeners for navigation
+            nextBtn.addEventListener('click', nextStep);
+            prevBtn.addEventListener('click', prevStep);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    nextStep();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    prevStep();
+                }
+            });
+
+            // Initial setup
+            showSlide(0);
+        });
+    </script>
+</body>
+</html>
